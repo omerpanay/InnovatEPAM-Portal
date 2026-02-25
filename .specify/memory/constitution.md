@@ -1,50 +1,155 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  ==================
+  Version change: 0.0.0 (template) → 1.0.0
+  Modified principles: N/A (initial population from template)
+  Added sections:
+    - Principle I: Spec-Driven Development (SDD)
+    - Principle II: Test-Driven Development (TDD)
+    - Principle III: Architectural Integrity
+    - Principle IV: YAGNI
+    - Section: Technology Stack
+    - Section: Engineering Standards
+    - Section: Governance
+  Removed sections: None
+  Templates requiring updates:
+    - plan-template.md    ✅ Compatible (Constitution Check section aligns)
+    - spec-template.md    ✅ Compatible (User Stories & Testing section aligns)
+    - tasks-template.md   ✅ Compatible (TDD task ordering aligns)
+  Follow-up TODOs: None
+-->
+
+# InnovatEPAM Portal Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Spec-Driven Development (SDD)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Direct coding is **prohibited**. Every feature MUST follow the full
+specification lifecycle before any implementation begins:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+1. **Specify** — Define requirements, user stories, and acceptance criteria.
+2. **Plan** — Produce an implementation plan with technical context and
+   design decisions.
+3. **Tasks** — Break the plan into dependency-ordered, independently
+   testable tasks.
+4. **Implement** — Write code only after tasks are approved.
+5. **Validate** — Verify the implementation against the specification
+   and acceptance criteria.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Skipping or reordering any phase is a governance violation.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Test-Driven Development (TDD)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+The **Red-Green-Refactor** cycle is mandatory for all application code:
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Red**: Write a failing `pytest` test that captures the desired
+  behavior *before* writing any implementation code.
+- **Green**: Write the minimum implementation code required to make the
+  test pass.
+- **Refactor**: Clean up the implementation while keeping all tests
+  green.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Every API endpoint MUST have:
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- At least one **positive** test case (expected success path).
+- At least one **negative** test case (invalid input, unauthorized
+  access, missing resource).
+
+Pull requests without corresponding tests MUST be rejected.
+
+### III. Architectural Integrity
+
+All modules MUST adhere to the **Single Responsibility Principle (SRP)**:
+
+- Each module, class, or function MUST have one clearly defined
+  responsibility.
+- Services MUST be decoupled — no service may directly import or
+  instantiate another service's internal models.
+- Cross-service communication MUST occur through well-defined
+  interfaces (API contracts, dependency injection).
+- Circular dependencies are prohibited.
+
+### IV. YAGNI (You Aren't Gonna Need It)
+
+- Code MUST solve the current, specified requirement — nothing more.
+- Speculative abstractions, unused configuration options, and
+  premature optimizations are prohibited.
+- If a capability is not in an approved specification, it MUST NOT be
+  implemented.
+
+## Technology Stack
+
+| Layer            | Technology                       |
+|------------------|----------------------------------|
+| **Language**     | Python 3.11+                     |
+| **Framework**    | FastAPI                          |
+| **Database**     | PostgreSQL                       |
+| **ORM**          | SQLAlchemy (async where needed)  |
+| **Auth**         | JWT (JSON Web Tokens)            |
+| **Testing**      | pytest                           |
+
+Deviations from this stack MUST be justified in the implementation plan
+and approved before work begins.
+
+## Engineering Standards
+
+### Code Style
+
+- Strict adherence to **PEP 8** is required on all Python source files.
+- Linting (e.g., `ruff` or `flake8`) MUST pass with zero warnings
+  before a pull request is eligible for review.
+- All modules, classes, and public functions MUST include **docstrings**
+  following Google or NumPy style conventions.
+- All function signatures MUST use **type hints** (`typing` module or
+  built-in generics).
+
+### Error Handling
+
+All API error responses MUST use a standardized JSON structure:
+
+```json
+{
+  "detail": "<human-readable message>"
+}
+```
+
+Explicit HTTP status codes MUST be used:
+
+| Code | Usage                                         |
+|------|-----------------------------------------------|
+| 400  | Malformed request / validation failure        |
+| 401  | Missing or invalid authentication credentials |
+| 403  | Authenticated but insufficient permissions    |
+| 404  | Requested resource not found                  |
+| 500  | Unhandled server error (must be logged)       |
+
+Generic `Exception` catches that silently swallow errors are prohibited.
+
+### Documentation
+
+- Every Python module MUST begin with a module-level docstring
+  describing its purpose.
+- Public API endpoints MUST include OpenAPI summary and description
+  metadata via FastAPI decorators.
+- README and quickstart documentation MUST be kept in sync with any
+  architectural changes.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+1. **Supremacy** — This constitution supersedes all ad-hoc practices.
+   Conflicts MUST be resolved in favor of the constitution.
+2. **Amendment Process** — Amendments require:
+   - A written proposal describing the change and rationale.
+   - Approval from the project lead or designated reviewers.
+   - A migration plan if existing code is affected.
+3. **Versioning** — The constitution follows **Semantic Versioning**:
+   - MAJOR: Backward-incompatible principle removal or redefinition.
+   - MINOR: New principle or materially expanded guidance.
+   - PATCH: Clarifications, wording, or non-semantic refinements.
+4. **Compliance Review** — Every pull request and code review MUST
+   verify compliance with the principles defined above. Non-compliant
+   submissions MUST be rejected with a reference to the violated
+   principle.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-25
