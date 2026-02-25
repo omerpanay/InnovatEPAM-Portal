@@ -22,6 +22,12 @@ Full-stack innovation management platform for EPAM employees to submit, browse, 
 - **Forms**: React Hook Form
 - **Testing**: Vitest + React Testing Library
 
+### MCP Tools (AI-Assisted Development)
+
+- **PostgreSQL MCP**: Direct database queries for schema verification and data inspection
+- **Sequential Thinking MCP**: Structured problem decomposition for complex features
+- **Context7 MCP**: Real-time library documentation lookup (React, FastAPI, Tailwind CSS)
+
 ## Quick Start
 
 ### Backend
