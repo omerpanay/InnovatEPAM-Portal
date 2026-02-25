@@ -9,6 +9,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
@@ -24,7 +25,11 @@ _test_session_factory = None
 
 @pytest.fixture(autouse=True)
 async def setup_and_teardown():
-    """Set up and tear down the database for each test."""
+    """Set up and tear down the database for each test.
+
+    Uses CREATE IF NOT EXISTS + TRUNCATE so the schema is preserved
+    for the running application after tests complete.
+    """
     global _test_engine, _test_session_factory
 
     # Import all models
@@ -46,15 +51,15 @@ async def setup_and_teardown():
 
     app.dependency_overrides[get_db] = _override_get_db
 
-    # Create tables
+    # Ensure tables exist (idempotent — won't recreate if already present)
     async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     yield
 
-    # Drop tables
+    # Truncate data but keep tables intact
     async with _test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(text("TRUNCATE TABLE evaluations, ideas, users CASCADE"))
 
     await _test_engine.dispose()
 
