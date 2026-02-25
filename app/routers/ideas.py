@@ -31,6 +31,10 @@ async def create_idea(
     db: AsyncSession = Depends(get_db),
 ):
     """Submit a new idea with an optional file attachment."""
+    # Swagger UI sends an empty file part when no file is selected
+    if attachment and not attachment.filename:
+        attachment = None
+
     try:
         idea = await idea_service.create_idea(
             db=db,

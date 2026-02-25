@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+/* ── EPAM Design System Tokens ── */
+
+@theme {
+  /* EPAM Brand Colors */
+  --color-epam-cyan: #00AEEF;
+  --color-epam-cyan-light: #76CDD8;
+  --color-epam-cyan-dark: #0091D5;
+  --color-epam-black: #000000;
+  --color-epam-white: #FFFFFF;
+  --color-epam-gray-900: #111111;
+  --color-epam-gray-800: #1A1A1A;
+  --color-epam-gray-700: #2A2A2A;
+  --color-epam-gray-600: #3A3A3A;
+  --color-epam-gray-400: #808080;
+  --color-epam-gray-300: #B3B3B3;
+  --color-epam-gray-200: #D9D9D9;
+  --color-epam-gray-100: #F0F0F0;
+
+  /* Semantic Colors */
+  --color-primary: #00AEEF;
+  --color-primary-hover: #0091D5;
+  --color-primary-light: #00AEEF1A;
+
+  --color-surface: #000000;
+  --color-surface-card: #111111;
+  --color-surface-elevated: #1A1A1A;
+  --color-surface-hover: #2A2A2A;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B3B3B3;
+  --color-text-muted: #808080;
+
+  --color-success: #46BC99;
+  --color-success-bg: #46BC991A;
+  --color-warning: #F5A623;
+  --color-warning-bg: #F5A6231A;
+  --color-danger: #FF5A5F;
+  --color-danger-bg: #FF5A5F1A;
+
+  --color-border: #2A2A2A;
+  --color-border-hover: #00AEEF40;
+}
+
+/* ── Base Styles ── */
+
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: local('Inter');
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: 'Inter', 'Source Sans Pro', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── EPAM Card ── */
+
+.epam-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.epam-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 20px rgba(0, 174, 239, 0.05);
+}
+
+/* ── EPAM Button Primary ── */
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-epam-black);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── EPAM Button Ghost ── */
+
+.btn-ghost {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-ghost.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+/* ── EPAM Input ── */
+
+.epam-input {
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.epam-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.epam-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* ── Animations ── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ── Scrollbar ── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-epam-gray-600);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-epam-gray-400);
+}
