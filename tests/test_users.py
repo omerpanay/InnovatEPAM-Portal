@@ -88,3 +88,82 @@ class TestRoleEnforcement:
             json={"role": "evaluator"},
         )
         assert response.status_code in (401, 403)
+
+
+# =============================================================================
+# Profile & Password Tests
+# =============================================================================
+
+class TestProfileAndPassword:
+    """Tests for GET/PATCH /me and POST /me/password endpoints."""
+
+    async def test_get_my_profile(self, authenticated_client: AsyncClient):
+        response = await authenticated_client.get("/api/v1/users/me")
+        assert response.status_code == 200
+        assert response.json()["email"] == "submitter@test.com"
+
+    async def test_update_my_profile(self, authenticated_client: AsyncClient):
+        response = await authenticated_client.patch(
+            "/api/v1/users/me",
+            json={"username": "new_username", "email": "new_email@test.com"}
+        )
+        assert response.status_code == 200
+        assert response.json()["username"] == "new_username"
+        assert response.json()["email"] == "new_email@test.com"
+
+    async def test_update_duplicate_email(self, authenticated_client: AsyncClient, db_session):
+        from app.models.user import User
+        import uuid
+        user2 = User(
+            id=uuid.uuid4(),
+            email="otheruser@test.com",
+            username="other",
+            hashed_password="...",
+            role="submitter"
+        )
+        db_session.add(user2)
+        await db_session.commit()
+
+        response = await authenticated_client.patch(
+            "/api/v1/users/me",
+            json={"email": "otheruser@test.com"}
+        )
+        assert response.status_code == 400
+        assert "Email already in use" in response.json()["detail"]
+
+    async def test_change_password(self, authenticated_client: AsyncClient):
+        response = await authenticated_client.post(
+            "/api/v1/users/me/password",
+            json={"old_password": "testpass123", "new_password": "newsecurepass"}
+        )
+        assert response.status_code == 200
+        assert "Password changed successfully" in response.json()["detail"]
+
+    async def test_change_password_wrong_old(self, authenticated_client: AsyncClient):
+        response = await authenticated_client.post(
+            "/api/v1/users/me/password",
+            json={"old_password": "wrongpassword", "new_password": "newsecurepass"}
+        )
+        assert response.status_code == 400
+        assert "Current password is incorrect" in response.json()["detail"]
+
+
+# =============================================================================
+# Admin User List Tests
+# =============================================================================
+
+class TestUserListing:
+    """Tests for GET /users listing endpoints."""
+
+    async def test_list_users_as_evaluator(self, evaluator_client: AsyncClient):
+        response = await evaluator_client.get("/api/v1/users")
+        assert response.status_code == 200
+        data = response.json()
+        assert "items" in data
+        assert "total" in data
+        assert data["total"] >= 1
+
+    async def test_list_users_as_submitter(self, authenticated_client: AsyncClient):
+        response = await authenticated_client.get("/api/v1/users")
+        # Submitter should be forbidden from accessing admin endpoints
+        assert response.status_code == 403

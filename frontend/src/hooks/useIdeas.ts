@@ -15,6 +15,7 @@ interface UseIdeasParams {
     limit?: number
     mine?: boolean
     status?: string
+    search?: string
 }
 
 interface UseIdeasReturn {
@@ -30,6 +31,7 @@ export function useIdeas({
     limit = PAGE_SIZE,
     mine,
     status,
+    search,
 }: UseIdeasParams): UseIdeasReturn {
     const [ideas, setIdeas] = useState<IdeaListItem[]>([])
     const [total, setTotal] = useState(0)
@@ -51,6 +53,7 @@ export function useIdeas({
                 }
                 if (mine) params.mine = true
                 if (status) params.idea_status = status
+                if (search) params.search = search
 
                 const res = await apiClient.get<PaginatedResponse<IdeaListItem>>(
                     '/ideas',
@@ -75,7 +78,7 @@ export function useIdeas({
         return () => {
             cancelled = true
         }
-    }, [skip, limit, mine, status, trigger])
+    }, [skip, limit, mine, status, search, trigger])
 
     return { ideas, total, loading, error, refetch }
 }

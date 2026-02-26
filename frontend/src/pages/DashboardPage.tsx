@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useIdeas } from '../hooks/useIdeas'
+import { useIdeaStats } from '../hooks/useIdeaStats'
 import IdeaCard from '../components/IdeaCard'
 import IdeaForm from '../components/IdeaForm'
 import Pagination from '../components/Pagination'
@@ -16,12 +17,16 @@ export default function DashboardPage() {
     const [skip, setSkip] = useState(0)
     const [mine, setMine] = useState(false)
     const [status, setStatus] = useState('')
+    const [search, setSearch] = useState('')
     const [showForm, setShowForm] = useState(false)
+
+    const { stats } = useIdeaStats()
 
     const { ideas, total, loading, error, refetch } = useIdeas({
         skip,
         mine,
         status: status || undefined,
+        search: search || undefined,
     })
 
     const handleFormSuccess = () => {
@@ -61,6 +66,28 @@ export default function DashboardPage() {
                 )}
             </div>
 
+            {/* ── Stats Row ── */}
+            {stats && (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 animate-reveal delay-100">
+                    <div className="epam-card border-l-4 border-l-primary p-5 text-center transition hover:shadow-glow hover:-translate-y-1">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Total Ideas</div>
+                        <div className="mt-2 text-3xl font-bold text-text-primary">{stats.total}</div>
+                    </div>
+                    <div className="epam-card p-5 text-center transition hover:-translate-y-1">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Submitted</div>
+                        <div className="mt-2 text-3xl font-bold text-text-primary shadow-sm">{stats.submitted}</div>
+                    </div>
+                    <div className="epam-card p-5 text-center transition hover:-translate-y-1">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Accepted</div>
+                        <div className="mt-2 text-3xl font-bold text-success">{stats.accepted}</div>
+                    </div>
+                    <div className="epam-card p-5 text-center transition hover:-translate-y-1">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Rejected</div>
+                        <div className="mt-2 text-3xl font-bold text-danger">{stats.rejected}</div>
+                    </div>
+                </div>
+            )}
+
             {/* ── Idea Form (inline) ── */}
             {showForm && (
                 <IdeaForm
@@ -69,8 +96,23 @@ export default function DashboardPage() {
                 />
             )}
 
-            {/* ── Filters ── */}
-            <div className="flex flex-wrap items-center gap-6">
+            {/* ── Filters & Search ── */}
+            <div className="flex flex-wrap items-center gap-6 animate-reveal delay-200">
+
+                {/* Search Input */}
+                <div className="w-full sm:w-64">
+                    <input
+                        type="text"
+                        placeholder="Search ideas..."
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value)
+                            setSkip(0)
+                        }}
+                        className="epam-input w-full bg-surface-elevated"
+                    />
+                </div>
+
                 {/* Status filter tabs */}
                 <div className="flex items-center gap-1 border border-border">
                     {statuses.map((s) => (
@@ -81,8 +123,8 @@ export default function DashboardPage() {
                                 setSkip(0)
                             }}
                             className={`px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${status === s
-                                    ? 'bg-primary text-epam-black'
-                                    : 'text-text-muted hover:text-primary'
+                                ? 'bg-primary text-white shadow-[0_0_12px_rgba(0,174,239,0.4)]'
+                                : 'text-text-muted hover:bg-surface-elevated hover:text-primary'
                                 }`}
                         >
                             {statusLabels[s]}
@@ -97,8 +139,8 @@ export default function DashboardPage() {
                         setSkip(0)
                     }}
                     className={`px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${mine
-                            ? 'border border-primary bg-primary/10 text-primary'
-                            : 'btn-ghost'
+                        ? 'border border-primary bg-primary/10 text-primary'
+                        : 'btn-ghost'
                         }`}
                 >
                     My Ideas
@@ -122,8 +164,8 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {ideas.map((idea) => (
-                        <IdeaCard key={idea.id} idea={idea} />
+                    {ideas.map((idea, index) => (
+                        <IdeaCard key={idea.id} idea={idea} index={index} />
                     ))}
                 </div>
             )}

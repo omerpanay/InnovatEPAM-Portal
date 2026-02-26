@@ -17,6 +17,14 @@ export interface IdeaListItem {
     created_at: string
 }
 
+/** Dashboard metrics for ideas. */
+export interface IdeaStats {
+    total: number
+    submitted: number
+    accepted: number
+    rejected: number
+}
+
 /** Full idea detail. */
 export interface IdeaDetail {
     id: string

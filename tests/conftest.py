@@ -37,8 +37,31 @@ async def setup_and_teardown():
     from app.models import idea  # noqa: F401
     from app.models import evaluation  # noqa: F401
 
+    # Construct safe TEST_DATABASE_URL
+    # Never wipe the main database!
+    test_db_url = settings.DATABASE_URL
+    if not test_db_url.endswith("_test"):
+        test_db_url += "_test"
+
+    # Synchronously attempt to create the test database if it doesn't exist
+    import psycopg
+    from psycopg.errors import DuplicateDatabase
+    sync_url = test_db_url.replace("+asyncpg", "").replace("_test", "")
+    try:
+        with psycopg.connect(sync_url, autocommit=True) as conn:
+            with conn.cursor() as cur:
+                # Need to use plain strings for CREATE DATABASE since parameters aren't allowed
+                # We know the DB name is just the original name + _test
+                original_db_name = sync_url.split("/")[-1]
+                test_db_name = original_db_name + "_test"
+                cur.execute(f"CREATE DATABASE {test_db_name}")
+    except DuplicateDatabase:
+        pass
+    except Exception as e:
+        print(f"Warning: Could not auto-create test database: {e}")
+
     _test_engine = create_async_engine(
-        settings.DATABASE_URL, echo=False, pool_pre_ping=True
+        test_db_url, echo=False, pool_pre_ping=True
     )
     _test_session_factory = async_sessionmaker(
         _test_engine, class_=AsyncSession, expire_on_commit=False
@@ -54,12 +77,20 @@ async def setup_and_teardown():
     # Ensure tables exist (idempotent — won't recreate if already present)
     async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Truncate BEFORE test to ensure clean state
+        try:
+            await conn.execute(text("TRUNCATE TABLE evaluations, ideas, users CASCADE"))
+        except Exception:
+            pass
 
     yield
 
     # Truncate data but keep tables intact
     async with _test_engine.begin() as conn:
-        await conn.execute(text("TRUNCATE TABLE evaluations, ideas, users CASCADE"))
+        try:
+            await conn.execute(text("TRUNCATE TABLE evaluations, ideas, users CASCADE"))
+        except Exception:
+            pass
 
     await _test_engine.dispose()
 

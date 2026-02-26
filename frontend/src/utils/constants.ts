@@ -8,6 +8,8 @@ export const ROUTES = {
     REGISTER: '/register',
     DASHBOARD: '/',
     IDEA_DETAIL: '/ideas/:id',
+    PROFILE: '/profile',
+    ADMIN: '/admin',
 } as const
 
 /** Human-readable category labels. */

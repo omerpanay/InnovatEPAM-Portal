@@ -5,13 +5,18 @@ router registration, health check, and global error handling.
 """
 
 import logging
+import time
 
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 
+from app.config import settings
+from app.core.logging import setup_logging
 from app.routers import auth, evaluations, ideas, users
 
+# Initialize logging before creating the app
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +31,7 @@ def create_app() -> FastAPI:
     # CORS configuration
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[settings.FRONTEND_URL],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

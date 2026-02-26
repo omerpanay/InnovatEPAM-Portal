@@ -1,144 +1,114 @@
-# InnovatEPAM Portal — Phase 1 MVP
+# InnovatEPAM Portal — Production Ready
 
 Full-stack innovation management platform for EPAM employees to submit, browse, and evaluate ideas.
+This project has been heavily refined using a Multi-Agent architecture to reach **Presentation & Production Readiness**.
 
-## Tech Stack
+## 🚀 Key Features
+
+* **Role-Based Access Control**: Submitters (propose) vs. Evaluators (review/approve).
+* **Administrative Dashboard**: Live metrics row (Total, Submitted, Accepted, Rejected) powered by efficient SQL aggregates.
+* **Real-time Idea Filtering**: Live search by text and category filters.
+* **Premium EPAM Design System**: "Midnight Enterprise Minimalist" aesthetic featuring sharp geometries, deep navy contrast (`#0A0D14`), and complex micro-animations (`animate-reveal`, `hover-lift`).
+* **SaaS-Style Split-Pane Profile**: Context-aware profile management preventing immutable data changes (Email).
+* **Native PDF Export**: Custom `@media print` CSS delivering a pristine, black-and-white enterprise report directly from the browser.
+* **Production-Ready Backend**: Complete structured logging, global exception handling, and optimized Docker multi-stage builds.
+
+## 🛠 Tech Stack
 
 ### Backend
 
-- **Framework**: FastAPI 0.115 (Python 3.11+)
-- **Database**: PostgreSQL 15+ (async via SQLAlchemy + asyncpg)
-- **Auth**: JWT (python-jose) + bcrypt
-- **Migrations**: Alembic
-- **Testing**: pytest + pytest-asyncio + httpx
+* **Framework**: FastAPI 0.115 (Python 3.11+)
+* **Database**: PostgreSQL 15+ (async via SQLAlchemy + asyncpg)
+* **Auth**: JWT (python-jose) + bcrypt
+* **Migrations**: Alembic
+* **Testing**: pytest (41/41 passing)
 
 ### Frontend
 
-- **Framework**: React 19 (initialized via Vite 7)
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS 4 with EPAM corporate theme
-- **API Client**: Axios with JWT interceptor
-- **Routing**: React Router 7
-- **Forms**: React Hook Form
-- **Testing**: Vitest + React Testing Library
+* **Framework**: React 19 (initialized via Vite 7)
+* **Language**: TypeScript (strict mode)
+* **Styling**: Tailwind CSS 4 with custom `index.css` animations
+* **State/Routing**: React Router 7 + Custom Hooks (`useIdeas`, `useIdeaStats`)
 
-### MCP Tools (AI-Assisted Development)
+### Containerization & DevOps
 
-- **PostgreSQL MCP**: Direct database queries for schema verification and data inspection
-- **Sequential Thinking MCP**: Structured problem decomposition for complex features
-- **Context7 MCP**: Real-time library documentation lookup (React, FastAPI, Tailwind CSS)
+* **Docker Compose**: Orchestrates `db` (Postgres), `backend` (FastAPI), and `frontend` (Nginx).
+* **Security**: Non-root `appuser` containers, `.env` interpolation, strict CORS matching.
 
-## Quick Start
+## 🐳 Quick Start (Docker - Recommended)
+
+```bash
+# 1. Clone & prepare environment
+cp .env.example .env
+# Edit .env with your desired secrets
+
+# 2. Build and start all services
+docker compose up --build -d
+
+# 3. Access the application
+# Frontend: http://localhost:5173 (or 80)
+# Backend API Docs: http://localhost:8000/docs
+```
+
+## 💻 Local Development
 
 ### Backend
 
 ```bash
-# Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # Linux/Mac
-
-# Install dependencies
+.venv\Scripts\activate
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your DATABASE_URL and SECRET_KEY
+# Start local DB (requires your own Postgres)
+# Edit .env with your DATABASE_URL
 
-# Run migrations
 alembic upgrade head
-
-# Start development server
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with VITE_API_BASE_URL if needed
-
-# Start development server
-npm run dev        # → http://localhost:5173
-
-# Run tests
-npm run test       # → 15/15 pass
-
-# Production build
-npm run build
+npm run dev
 ```
 
-## API Endpoints
+## 🧪 Testing
 
-| Method   | Path                          | Auth      | Description              |
-| -------- | ----------------------------- | --------- | ------------------------ |
-| `POST`   | `/api/v1/auth/register`       | —         | Register new user        |
-| `POST`   | `/api/v1/auth/login`          | —         | Login → JWT              |
-| `POST`   | `/api/v1/auth/logout`         | Bearer    | Invalidate token         |
-| `PATCH`  | `/api/v1/users/{id}/role`     | evaluator | Promote user role        |
-| `POST`   | `/api/v1/ideas`               | submitter | Submit idea (multipart)  |
-| `GET`    | `/api/v1/ideas`               | any       | List ideas (paginated)   |
-| `GET`    | `/api/v1/ideas/{id}`          | any       | Idea detail              |
-| `POST`   | `/api/v1/ideas/{id}/evaluate` | evaluator | Accept/reject idea       |
-| `GET`    | `/health`                     | —         | Liveness probe           |
-
-## Running Tests
+### Backend Tests
 
 ```bash
-# Backend (34 tests)
+# Backend
 pytest tests/ -v
-
-# Frontend (15 tests)
-cd frontend && npx vitest run
 ```
 
-## Project Structure
+### Frontend Tests
+
+```bash
+# Frontend
+cd frontend
+npm run test
+```
+
+## 📁 Project Structure
 
 ```text
 EpamPortal/
 ├── app/                        # Backend (FastAPI)
-│   ├── config.py               # Settings via pydantic-settings
-│   ├── database.py             # SQLAlchemy async engine + Base
-│   ├── main.py                 # FastAPI app factory + CORS
-│   ├── dependencies/auth.py    # get_db, get_current_user, require_role
-│   ├── models/                 # SQLAlchemy ORM models
-│   ├── schemas/                # Pydantic request/response models
-│   ├── services/               # Business logic layer
-│   └── routers/                # FastAPI route handlers
-├── tests/                      # Backend pytest tests
-├── frontend/                   # Frontend (React + Vite)
-│   ├── src/
-│   │   ├── components/         # Reusable UI components (10)
-│   │   ├── pages/              # Route-level pages (5)
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── context/            # Auth context provider
-│   │   ├── api/                # Axios client
-│   │   ├── types/              # TypeScript interfaces
-│   │   └── utils/              # Constants & helpers
-│   └── __tests__/              # Frontend test suites (3)
-├── specs/                      # Specification artifacts
-│   ├── 001-portal-phase1-mvp/  # Backend spec, plan, tasks, ADRs
-│   └── 002-portal-frontend/    # Frontend spec, plan, tasks
-└── .specify/memory/            # Project constitution
+│   ├── config.py               # Env settings
+│   ├── main.py                 # Factory + CORS + Root exception handler
+│   ├── models/, schemas/       # ORM & Pydantic
+│   ├── services/, routers/     # Business logic & Endpoints
+│   └── database.py             # SQLAlchemy Async Engine
+├── tests/                      # Pytest cases
+├── frontend/                   # React + Vite Frontend
+│   ├── src/pages/              # Dashboard, Profile, IdeaDetail
+│   ├── src/components/         # UI Elements
+│   ├── src/hooks/              # useIdeas, useIdeaStats, useAuth
+│   └── src/index.css           # EPAM Design Tokens & Animations
+├── docker-compose.yml          # Container orchestration
+├── backend.Dockerfile          # Optimized Python image
+└── frontend.Dockerfile         # Multi-stage Nginx image
 ```
-
-## Architecture Decision Records
-
-See [specs/001-portal-phase1-mvp/adrs/](specs/001-portal-phase1-mvp/adrs/) for documented technical decisions:
-
-- **ADR-001**: Backend Stack — FastAPI + PostgreSQL + SQLAlchemy
-- **ADR-002**: JWT Authentication — Token-based auth with blocklist
-- **ADR-003**: Frontend Stack — React + Vite + TypeScript + Tailwind CSS
-
-## Specification
-
-- **Backend**: [specs/001-portal-phase1-mvp/](specs/001-portal-phase1-mvp/) — feature spec, plan, data model, API contracts
-- **Frontend**: [specs/002-portal-frontend/](specs/002-portal-frontend/) — feature spec, plan, tasks
-- **Constitution**: [.specify/memory/constitution.md](.specify/memory/constitution.md) — project principles and standards

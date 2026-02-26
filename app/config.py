@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     UPLOAD_DIR: str = "./app/uploads"
+    FRONTEND_URL: str = "http://localhost:5173"
 
     # Provide a sync URL for Alembic (derived from DATABASE_URL)
     @property

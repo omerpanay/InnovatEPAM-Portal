@@ -32,6 +32,8 @@ The project was developed as a Phase 1 MVP using a **Spec-Driven Development (SD
 | Download Attachment      | `GET /api/v1/ideas/{id}/attachment`             | ✅     |
 | Evaluate Idea            | `POST /api/v1/ideas/{id}/evaluate`             | ✅     |
 | Role Promotion           | `PATCH /api/v1/users/{id}/role`                | ✅     |
+| Admin Idea Stats         | `GET /api/v1/ideas/stats`                      | ✅     |
+| Search Term Support      | Query `?search=keyword` on Ideas List          | ✅     |
 | Role-Based Access Control| Dependency-injected via `require_role()`       | ✅     |
 
 ### Frontend (React SPA)
@@ -42,16 +44,20 @@ The project was developed as a Phase 1 MVP using a **Spec-Driven Development (SD
 | Registration Page        | `RegisterPage.tsx`                              | ✅     |
 | JWT Auth Context         | `AuthContext.tsx`, `useAuth.ts`                 | ✅     |
 | Protected Routes         | `ProtectedRoute.tsx`                            | ✅     |
+| Split-Pane Profile Page  | `ProfilePage.tsx` (Premium Redesign)            | ✅     |
 | Ideas Dashboard          | `DashboardPage.tsx`, `IdeaCard.tsx`             | ✅     |
+| Admin Stats Row          | 4 Animated Metrics Cards                        | ✅     |
+| Live Search Filter       | Real-time text filtering                        | ✅     |
 | Status & My Ideas Filter | `DashboardPage.tsx`, `useIdeas.ts`              | ✅     |
 | Pagination               | `Pagination.tsx`                                | ✅     |
 | Idea Submission Form     | `IdeaForm.tsx` (with file validation)           | ✅     |
 | Idea Detail View         | `IdeaDetailPage.tsx`                            | ✅     |
+| Native PDF Export        | `window.print()` + CSS `@media print`           | ✅     |
 | Evaluation Panel         | `EvaluationPanel.tsx`                           | ✅     |
 | Role-Based UI            | Conditional rendering by `user.role`            | ✅     |
-| EPAM Design System       | `index.css` (black/cyan/industrial)             | ✅     |
+| EPAM Design System       | "Midnight Enterprise" (black/cyan/animations)   | ✅     |
 | 404 Not Found Page       | `NotFoundPage.tsx`                              | ✅     |
-| Token Expiry Handling    | Axios interceptor → auto-redirect              | ✅     |
+| Token Expiry Handling    | Axios interceptor → 401 Auto-redirect           | ✅     |
 
 ---
 

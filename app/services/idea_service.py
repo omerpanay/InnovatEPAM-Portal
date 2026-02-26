@@ -3,8 +3,11 @@
 Handles idea creation, listing, detail retrieval, and file uploads.
 """
 
+import logging
 import uuid
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from fastapi import UploadFile
 from sqlalchemy import func, select
@@ -61,6 +64,7 @@ async def create_idea(
         file_path = upload_dir / file_name
         file_path.write_bytes(content)
         attachment_path = str(file_path)
+        logger.info("Saved attachment %s for new idea", file_name)
 
     idea = Idea(
         id=uuid.uuid4(),
@@ -74,6 +78,7 @@ async def create_idea(
     db.add(idea)
     await db.commit()
     await db.refresh(idea)
+    logger.info("Created new idea with ID %s by author %s", idea.id, author_id)
     return idea
 
 
@@ -83,6 +88,7 @@ async def get_ideas(
     limit: int = 20,
     mine: bool = False,
     status: str | None = None,
+    search: str | None = None,
     current_user_id: uuid.UUID | None = None,
 ) -> tuple[list[Idea], int]:
     """Get paginated list of ideas with optional filters.
@@ -93,6 +99,7 @@ async def get_ideas(
         limit: Maximum items per page.
         mine: If True, return only the current user's ideas.
         status: Optional status filter.
+        search: Optional search keyword to filter by title or description.
         current_user_id: Current user's ID (for mine filter).
 
     Returns:
@@ -100,6 +107,11 @@ async def get_ideas(
     """
     query = select(Idea)
     count_query = select(func.count(Idea.id))
+
+    if search:
+        search_filter = Idea.title.ilike(f"%{search}%") | Idea.description.ilike(f"%{search}%")
+        query = query.where(search_filter)
+        count_query = count_query.where(search_filter)
 
     if mine and current_user_id:
         query = query.where(Idea.author_id == current_user_id)
@@ -132,3 +144,78 @@ async def get_idea_by_id(db: AsyncSession, idea_id: uuid.UUID) -> Idea | None:
     """
     result = await db.execute(select(Idea).where(Idea.id == idea_id))
     return result.scalar_one_or_none()
+
+
+async def get_idea_stats(db: AsyncSession) -> dict[str, int]:
+    """Get overall statistics for ideas.
+    
+    Returns:
+        Dictionary with counts for total, submitted, accepted, and rejected.
+    """
+    # Use SQLAlchemy to get grouped counts efficiently
+    query = select(Idea.status, func.count(Idea.id)).group_by(Idea.status)
+    result = await db.execute(query)
+    
+    counts = {"submitted": 0, "accepted": 0, "rejected": 0}
+    total = 0
+    
+    for row in result:
+        status, count = row
+        if status in counts:
+            counts[status] = count
+        total += count
+        
+    counts["total"] = total
+    return counts
+
+
+async def update_idea(
+    db: AsyncSession,
+    idea: Idea,
+    title: str | None = None,
+    description: str | None = None,
+    category: str | None = None,
+) -> Idea:
+    """Update an idea's editable fields.
+
+    Args:
+        db: Database session.
+        idea: Idea object to update.
+        title: New title (if provided).
+        description: New description (if provided).
+        category: New category (if provided).
+
+    Returns:
+        Updated Idea object.
+    """
+    if title is not None:
+        idea.title = title
+    if description is not None:
+        idea.description = description
+    if category is not None:
+        idea.category = category
+    await db.commit()
+    await db.refresh(idea)
+    return idea
+
+
+async def delete_idea(db: AsyncSession, idea: Idea) -> None:
+    """Delete an idea and its attachment file.
+
+    Args:
+        db: Database session.
+        idea: Idea object to delete.
+    """
+    # Clean up attachment file if it exists
+    if idea.attachment_path:
+        file_path = Path(idea.attachment_path)
+        if file_path.exists():
+            file_path.unlink()
+            logger.info("Deleted attachment file at %s", idea.attachment_path)
+        else:
+            logger.warning("Attachment file at %s not found during idea deletion", idea.attachment_path)
+
+    idea_id = idea.id
+    await db.delete(idea)
+    await db.commit()
+    logger.info("Deleted idea with ID %s", idea_id)

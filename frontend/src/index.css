@@ -24,10 +24,11 @@
   --color-primary-hover: #0091D5;
   --color-primary-light: #00AEEF1A;
 
-  --color-surface: #000000;
-  --color-surface-card: #111111;
-  --color-surface-elevated: #1A1A1A;
-  --color-surface-hover: #2A2A2A;
+  --color-surface: #0A0D14;
+  /* Deep corporate navy-black */
+  --color-surface-card: #11151C;
+  --color-surface-elevated: #1A1F2B;
+  --color-surface-hover: #232A3B;
 
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #B3B3B3;
@@ -40,8 +41,8 @@
   --color-danger: #FF5A5F;
   --color-danger-bg: #FF5A5F1A;
 
-  --color-border: #2A2A2A;
-  --color-border-hover: #00AEEF40;
+  --color-border: #2A3143;
+  --color-border-hover: #3A445D;
 }
 
 /* ── Base Styles ── */
@@ -65,12 +66,13 @@ body {
 .epam-card {
   background-color: var(--color-surface-card);
   border: 1px solid var(--color-border);
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .epam-card:hover {
   border-color: var(--color-border-hover);
-  box-shadow: 0 0 20px rgba(0, 174, 239, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* ── EPAM Button Primary ── */
@@ -79,12 +81,16 @@ body {
   background-color: var(--color-primary);
   color: var(--color-epam-black);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  border-radius: 4px;
+  letter-spacing: 0.01em;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 174, 239, 0.2);
 }
 
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
+  box-shadow: 0 4px 8px rgba(0, 174, 239, 0.3);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
@@ -118,7 +124,8 @@ body {
   background-color: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
-  transition: border-color 0.2s ease;
+  border-radius: 4px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .epam-input::placeholder {
@@ -128,10 +135,61 @@ body {
 .epam-input:focus {
   border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 1px var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
 }
 
 /* ── Animations ── */
+
+/* Hover Interactions */
+.hover-lift {
+  transition-property: transform;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-glow {
+  transition-property: box-shadow;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Mandatory Animations */
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal {
+  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays for lists */
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
 
 @keyframes fade-in {
   from {
@@ -182,4 +240,56 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-epam-gray-400);
+}
+
+/* ── Print Styles (PDF Export) ── */
+@media print {
+
+  /* Hide all generic UI elements */
+  header,
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset body and surface backgrounds to white */
+  body,
+  .epam-card,
+  main,
+  #root {
+    background-color: white !important;
+    background-image: none !important;
+    color: black !important;
+  }
+
+  /* Remove borders and shadows */
+  .epam-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure text is readable */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  div {
+    color: black !important;
+  }
+
+  /* Status badges can keep their colors or turn to borders, we'll keep it simple */
+  .text-text-muted {
+    color: #666 !important;
+  }
+
+  /* Reset layout constraints for A4 width */
+  .max-w-7xl,
+  .max-w-4xl {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }

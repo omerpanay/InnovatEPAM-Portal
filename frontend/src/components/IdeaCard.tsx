@@ -9,15 +9,18 @@ import type { IdeaListItem } from '../types'
 
 interface IdeaCardProps {
     idea: IdeaListItem
+    index?: number
 }
 
-export default function IdeaCard({ idea }: IdeaCardProps) {
+export default function IdeaCard({ idea, index = 0 }: IdeaCardProps) {
     const navigate = useNavigate()
+
+    const delayClass = `delay-${(index % 3 + 1) * 100}`
 
     return (
         <button
             onClick={() => navigate(`/ideas/${idea.id}`)}
-            className="epam-card animate-slide-up w-full cursor-pointer p-6 text-left"
+            className={`epam-card w-full cursor-pointer p-6 text-left opacity-0 animate-reveal ${delayClass} hover-lift hover-glow`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">

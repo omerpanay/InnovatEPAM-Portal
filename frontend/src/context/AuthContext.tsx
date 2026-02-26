@@ -8,7 +8,6 @@
 import {
     createContext,
     useCallback,
-    useEffect,
     useMemo,
     useState,
     type ReactNode,
@@ -28,8 +27,10 @@ interface AuthContextValue {
     login: (data: LoginRequest) => Promise<void>
     register: (data: RegisterRequest) => Promise<void>
     logout: () => Promise<void>
+    setUser: (user: AuthUser) => void
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
 /** Decode a JWT payload (base64url → JSON). */
@@ -40,23 +41,22 @@ function decodeToken(token: string): Record<string, unknown> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<AuthUser | null>(null)
-    const [loading, setLoading] = useState(true)
-
-    /* Restore session from localStorage on mount */
-    useEffect(() => {
+    const [user, setUser] = useState<AuthUser | null>(() => {
         const token = localStorage.getItem('access_token')
         const savedUser = localStorage.getItem('user')
         if (token && savedUser) {
             try {
-                setUser(JSON.parse(savedUser))
+                return JSON.parse(savedUser)
             } catch {
                 localStorage.removeItem('access_token')
                 localStorage.removeItem('user')
             }
         }
-        setLoading(false)
-    }, [])
+        return null
+    })
+    const loading = false
+
+    /* Removed useEffect since we initialize synchronously */
 
     const persistUser = useCallback((authUser: AuthUser) => {
         localStorage.setItem('access_token', authUser.accessToken)
@@ -110,9 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
     }, [])
 
+    const updateUser = useCallback((updatedUser: AuthUser) => {
+        persistUser(updatedUser)
+    }, [persistUser])
+
     const value = useMemo(
-        () => ({ user, loading, login, register, logout }),
-        [user, loading, login, register, logout],
+        () => ({ user, loading, login, register, logout, setUser: updateUser }),
+        [user, loading, login, register, logout, updateUser],
     )
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
